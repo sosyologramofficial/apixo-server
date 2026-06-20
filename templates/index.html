@@ -1,0 +1,1841 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>AI STUDIO · Cinematic AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#06070d; --bg-2:#0c0e18; --bg-3:#13151f;
+  --card:rgba(20,22,35,.55); --card-2:rgba(28,30,46,.6);
+  --border:rgba(120,130,200,.16); --border-strong:rgba(140,150,220,.32);
+  --text:#e8eaf0; --text-dim:#8a8fa3; --text-mute:#5d6177;
+  --accent:#7c5cff; --accent-2:#00d4ff; --accent-3:#ff5cf2;
+  --grad:linear-gradient(135deg,#7c5cff 0%,#00d4ff 60%,#ff5cf2 100%);
+  --grad-2:linear-gradient(135deg,#7c5cff,#00d4ff);
+  --success:#2ecc71; --danger:#ff5577; --warning:#ffaa33;
+  --r-sm:8px; --r-md:12px; --r-lg:18px; --r-xl:24px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);
+  min-height:100vh;overflow-x:hidden;position:relative;
+  -webkit-font-smoothing:antialiased;
+}
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse at 15% 0%, rgba(124,92,255,.18) 0%, transparent 50%),
+    radial-gradient(ellipse at 85% 100%, rgba(0,212,255,.12) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 50%, rgba(255,92,242,.05) 0%, transparent 70%);
+}
+body::after{
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.025;
+  background-image:linear-gradient(rgba(255,255,255,.6) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.6) 1px,transparent 1px);
+  background-size:48px 48px;
+}
+.app{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column}
+
+/* ═══════════ HEADER ═══════════ */
+header.topbar{
+  position:sticky;top:0;z-index:50;
+  display:flex;align-items:center;justify-content:space-between;gap:20px;padding:14px 28px;
+  background:rgba(8,9,16,.65);backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+}
+.topbar-left { display: flex; align-items: center; }
+.topbar-center { display: flex; align-items: center; gap: 12px; }
+.topbar-right { display: flex; align-items: center; gap: 10px; }
+.brand{
+  font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:20px;letter-spacing:.4px;
+  display:flex;align-items:center;gap:10px;
+}
+.brand-text{
+  background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.brand-dot{
+  width:10px;height:10px;border-radius:50%;background:var(--grad);
+  box-shadow:0 0 16px rgba(124,92,255,.7);
+  animation:pulseDot 2.4s infinite;
+  flex-shrink:0;
+}
+@keyframes pulseDot{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.3);opacity:.7}}
+.topbar .spacer{flex:1}
+.chip{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:8px 14px;background:rgba(20,22,35,.6);border:1px solid var(--border);
+  border-radius:999px;font-size:13px;color:var(--text-dim);
+  transition:.2s;
+  max-width:260px;
+}
+.chip span, .chip b{
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  max-width:180px;
+}
+.chip.success{border-color:rgba(46,204,113,.3);color:#86eab1}
+.chip.warning{border-color:rgba(255,170,51,.3);color:#ffcc77}
+.chip.danger{border-color:rgba(255,85,119,.3);color:#ff8aa3}
+.chip b{color:var(--text);font-weight:600;font-family:'JetBrains Mono',monospace}
+.btn{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:9px 16px;border-radius:10px;font-size:13px;font-weight:500;
+  background:rgba(20,22,35,.6);border:1px solid var(--border);
+  color:var(--text);cursor:pointer;font-family:inherit;transition:.2s;
+}
+.btn:hover{border-color:var(--border-strong);background:rgba(28,30,46,.8)}
+.btn.primary{background:var(--grad-2);border:none;color:#fff;font-weight:600}
+.btn.primary:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(124,92,255,.4)}
+.btn.ghost{background:transparent}
+.btn.danger:hover{border-color:rgba(255,85,119,.4);color:#ff8aa3}
+.btn[disabled]{opacity:.5;cursor:not-allowed;transform:none!important;box-shadow:none!important}
+.icon{width:16px;height:16px;flex-shrink:0}
+
+/* ═══════════ LAYOUT ═══════════ */
+.workspace{
+  display:grid;grid-template-columns:minmax(360px,460px) 1fr;gap:24px;
+  padding:24px 28px;flex:1;
+}
+.panel{
+  background:var(--card);backdrop-filter:blur(20px);
+  border:1px solid var(--border);border-radius:var(--r-xl);
+  padding:22px;position:relative;overflow:hidden;
+}
+.panel.tall{min-height:calc(100vh - 130px)}
+
+/* ═══════════ FORM ═══════════ */
+.form-section{display:flex;flex-direction:column;gap:18px}
+.field{display:flex;flex-direction:column;gap:8px}
+.field-label{
+  font-size:11px;font-weight:600;letter-spacing:.8px;color:var(--text-mute);
+  text-transform:uppercase;display:flex;align-items:center;gap:6px;
+}
+.field-label .hint{
+  font-weight:400;letter-spacing:.2px;text-transform:none;
+  color:var(--text-mute);font-size:11px;margin-left:auto;
+}
+.input, .textarea, .select{
+  width:100%;padding:12px 14px;font-size:14px;font-family:inherit;
+  background:rgba(8,9,16,.55);border:1px solid var(--border);
+  border-radius:var(--r-md);color:var(--text);outline:none;transition:.18s;
+}
+.input:focus, .textarea:focus, .select:focus{
+  border-color:var(--accent);box-shadow:0 0 0 3px rgba(124,92,255,.16);
+  background:rgba(8,9,16,.85);
+}
+.textarea{min-height:90px;resize:vertical;line-height:1.5}
+.select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%238a8fa3'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;background-size:18px;padding-right:38px;cursor:pointer}
+
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.field-row-3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip-opt{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 38px;
+  padding: 0 14px;
+  border-radius:10px;font-size:13px;cursor:pointer;
+  background:rgba(8,9,16,.5);border:1px solid var(--border);color:var(--text-dim);
+  transition:.18s;font-family:inherit;user-select:none;
+  vertical-align: middle;
+}
+.chip-opt:hover{color:var(--text);border-color:var(--border-strong)}
+.chip-opt.active{
+  background:linear-gradient(135deg,rgba(124,92,255,.18),rgba(0,212,255,.12));
+  border-color:rgba(124,92,255,.5);color:#fff;font-weight:600;
+}
+
+.switch{display:inline-flex;align-items:center;gap:10px;cursor:pointer;user-select:none}
+.switch input{display:none}
+.switch .track{
+  width:36px;height:20px;border-radius:999px;background:rgba(40,44,68,.8);
+  position:relative;transition:.2s;border:1px solid var(--border);
+}
+.switch .track::after{
+  content:'';position:absolute;top:2px;left:2px;width:14px;height:14px;
+  background:#fff;border-radius:50%;transition:.2s;
+}
+.switch input:checked + .track{background:var(--grad-2);border-color:transparent}
+.switch input:checked + .track::after{left:18px}
+.switch span{font-size:13px;color:var(--text-dim)}
+
+/* ═══════════ DROPZONE ═══════════ */
+.dropzone{
+  display:block;width:100%;box-sizing:border-box;
+  position:relative;border:2px dashed var(--border-strong);border-radius:var(--r-lg);
+  padding:18px;text-align:center;cursor:pointer;background:rgba(8,9,16,.4);
+  transition:.2s;
+}
+.dropzone:hover{border-color:var(--accent);background:rgba(124,92,255,.06)}
+.dropzone.dragover{border-color:var(--accent);background:rgba(124,92,255,.1);transform:scale(1.01)}
+.dropzone input{display:none}
+.dz-icon{
+  width:34px;height:34px;margin:0 auto 8px;display:flex;align-items:center;justify-content:center;
+  border-radius:50%;background:rgba(124,92,255,.12);
+}
+.dz-text{font-size:13px;color:var(--text-dim)}
+.dz-text b{color:var(--text);font-weight:600}
+.previews{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.preview{
+  position:relative;width:64px;height:64px;border-radius:10px;overflow:hidden;
+  background:#000;border:1px solid var(--border);
+}
+.preview img, .preview video{width:100%;height:100%;object-fit:cover;display:block}
+.preview .x{
+  position:absolute;top:2px;right:2px;width:18px;height:18px;border-radius:50%;
+  background:rgba(0,0,0,.7);color:#fff;display:flex;align-items:center;justify-content:center;
+  font-size:11px;cursor:pointer;border:none;line-height:1;
+}
+.preview.audio{display:flex;align-items:center;justify-content:center;color:var(--text-dim);font-size:10px;padding:4px;text-align:center}
+
+.generate-btn{
+  width:100%;padding:16px;font-size:15px;font-weight:700;letter-spacing:.4px;
+  background:var(--grad);border:none;border-radius:var(--r-md);color:#fff;
+  cursor:pointer;font-family:inherit;transition:.2s;
+  box-shadow:0 8px 28px rgba(124,92,255,.25);
+}
+.generate-btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 14px 40px rgba(124,92,255,.4)}
+.generate-btn:disabled{opacity:.5;cursor:not-allowed}
+
+/* ═══════════ JOB CARDS ═══════════ */
+.jobs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+.job-card{
+  background:var(--card-2);border:1px solid var(--border);border-radius:var(--r-lg);
+  overflow:hidden;animation:rise .4s cubic-bezier(.2,.8,.2,1);transition:border-color .2s;
+}
+.job-card:hover{border-color:var(--border-strong)}
+.job-thumb{aspect-ratio:16/9;background:#000;position:relative;overflow:hidden}
+.job-thumb img,.job-thumb video{width:100%;height:100%;object-fit:cover;display:block}
+.job-thumb video{object-fit:contain}
+.job-status-badge{
+  position:absolute;top:8px;left:8px;font-family:'JetBrains Mono',monospace;
+  font-size:11px;letter-spacing:.6px;padding:4px 10px;border-radius:6px;
+  text-transform:uppercase;font-weight:600;pointer-events:none;
+}
+.badge-running{background:rgba(124,92,255,.15);color:var(--accent);border:1px solid rgba(124,92,255,.3)}
+.badge-done{background:rgba(46,204,113,.15);color:var(--success);border:1px solid rgba(46,204,113,.3)}
+.badge-error{background:rgba(255,85,119,.15);color:var(--danger);border:1px solid rgba(255,85,119,.3)}
+.job-progress{position:absolute;bottom:0;left:0;right:0;height:3px;background:rgba(255,255,255,.08)}
+.job-progress-fill{height:100%;background:var(--grad-2);transition:width .5s ease;box-shadow:0 0 8px rgba(124,92,255,.5)}
+.job-body{padding:14px}
+.prompt-row{display:flex;align-items:flex-start;gap:8px;margin-bottom:8px}
+.job-prompt{font-size:13px;color:var(--text);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.5}
+.copy-prompt-btn{background:none;border:none;color:var(--text-mute);cursor:pointer;font-size:14px;padding:2px 4px;flex-shrink:0;transition:.15s;line-height:1.5}
+.copy-prompt-btn:hover{color:var(--accent);transform:scale(1.15)}
+.job-meta{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.meta-tag{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-mute);background:rgba(8,9,16,.5);padding:3px 8px;border-radius:6px;border:1px solid var(--border)}
+.job-log{background:rgba(8,9,16,.5);border-radius:8px;padding:8px 10px;max-height:80px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+.log-line{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-mute);line-height:1.8;white-space:pre-wrap;word-break:break-all}
+.log-line.latest{color:var(--accent)}
+.btn-download{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  width:100%;padding:10px;margin-top:10px;
+  background:transparent;border:1px solid var(--accent);color:var(--accent);
+  border-radius:var(--r-md);font-family:'JetBrains Mono',monospace;
+  font-size:12px;letter-spacing:.4px;text-decoration:none;cursor:pointer;transition:.2s;
+}
+.btn-download:hover{background:linear-gradient(135deg,rgba(124,92,255,.15),rgba(0,212,255,.1));border-color:var(--accent-2)}
+.expand-btn,.job-delete-btn{
+  position:absolute;background:rgba(0,0,0,.65);backdrop-filter:blur(4px);
+  border:1px solid rgba(255,255,255,.15);color:#fff;
+  width:28px;height:28px;border-radius:8px;cursor:pointer;
+  font-size:13px;display:flex;align-items:center;justify-content:center;transition:.2s;
+}
+.expand-btn{bottom:8px;right:8px}
+.expand-btn:hover{background:var(--accent);color:#000;border-color:var(--accent)}
+.job-delete-btn{top:8px;right:8px;border-color:rgba(255,85,119,.35);color:rgba(255,85,119,.75)}
+.job-delete-btn:hover{background:var(--danger);color:#fff;border-color:var(--danger)}
+
+/* ═══════════ RESULTS TABS ═══════════ */
+.results-tabs{
+  display:flex;gap:4px;padding:4px;background:rgba(8,9,16,.6);
+  border:1px solid var(--border);border-radius:var(--r-md);margin-bottom:18px;
+}
+.results-tab{
+  flex:1;padding:10px 12px;border-radius:8px;font-size:12px;font-weight:500;
+  cursor:pointer;text-align:center;transition:.2s;color:var(--text-dim);
+  display:flex;align-items:center;justify-content:center;gap:6px;user-select:none;
+  background:none;border:none;font-family:inherit;
+}
+.results-tab:hover{color:var(--text)}
+.results-tab.active{
+  background:var(--grad-2);color:#fff;font-weight:600;
+  box-shadow:0 4px 14px rgba(124,92,255,.25);
+}
+.rtab-count{
+  font-family:'JetBrains Mono',monospace;font-size:10px;
+  background:rgba(255,255,255,.1);padding:1px 6px;border-radius:6px;
+  min-width:16px;text-align:center;
+}
+.results-tab.active .rtab-count{background:rgba(255,255,255,.2)}
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+
+/* ═══════════ PROMPT LIBRARY ═══════════ */
+.plib-header{display:flex;gap:10px;margin-bottom:14px}
+.plib-input{
+  flex:1;padding:10px 14px;font-size:13px;font-family:inherit;
+  background:rgba(8,9,16,.55);border:1px solid var(--border);
+  border-radius:var(--r-md);color:var(--text);outline:none;transition:.18s;
+}
+.plib-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(124,92,255,.16)}
+.plib-save-btn{
+  padding:10px 18px;font-size:13px;font-weight:600;font-family:inherit;
+  background:var(--grad-2);border:none;border-radius:var(--r-md);color:#fff;
+  cursor:pointer;white-space:nowrap;transition:.2s;
+}
+.plib-save-btn:hover{box-shadow:0 4px 16px rgba(124,92,255,.3)}
+.plib-list{display:flex;flex-direction:column;gap:10px}
+.plib-card{
+  background:var(--card-2);border:1px solid var(--border);border-radius:var(--r-md);
+  padding:12px 14px;display:flex;flex-direction:column;gap:10px;transition:.15s;
+}
+.plib-card:hover{border-color:var(--border-strong)}
+.plib-card-inputs {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+.plib-card-title-input {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  background: transparent;
+  border: none;
+  outline: none;
+  width: 100%;
+  padding: 0;
+  pointer-events: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.plib-card-text-display {
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--text-dim);
+  line-height: 1.5;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+}
+.plib-card-text-input {
+  display: none;
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--text-dim);
+  background: transparent;
+  border: none;
+  outline: none;
+  width: 100%;
+  padding: 0;
+  resize: none;
+  line-height: 1.5;
+}
+.plib-card.editing .plib-card-title-input {
+  background: rgba(8, 9, 16, 0.6);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 10px;
+  pointer-events: auto;
+  text-overflow: clip;
+  white-space: normal;
+  overflow: visible;
+}
+.plib-card.editing .plib-card-text-display {
+  display: none;
+}
+.plib-card.editing .plib-card-text-input {
+  display: block;
+  background: rgba(8, 9, 16, 0.6);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 10px;
+  pointer-events: auto;
+  min-height: 60px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+.plib-card.editing .plib-card-title-input:focus,
+.plib-card.editing .plib-card-text-input:focus {
+  border-color: var(--accent);
+}
+.plib-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  width: 100%;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+  padding-top: 8px;
+}
+.plib-actions{display:flex;gap:6px;flex-shrink:0}
+.plib-act-btn{
+  font-family:'JetBrains Mono',monospace;font-size:11px;padding:4px 10px;
+  border-radius:6px;border:1px solid var(--border);background:rgba(8,9,16,.5);
+  color:var(--text-mute);cursor:pointer;transition:.12s;white-space:nowrap;
+}
+.plib-act-btn.use{border-color:rgba(124,92,255,.4);color:var(--accent)}
+.plib-act-btn.use:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+.plib-act-btn.del:hover{border-color:var(--danger);color:var(--danger)}
+
+/* ═══════════ EXPAND MODAL ═══════════ */
+#expand-modal{
+  position:fixed;inset:0;background:rgba(0,0,0,.88);backdrop-filter:blur(12px);
+  z-index:150;display:none;align-items:center;justify-content:center;
+  flex-direction:column;gap:12px;
+}
+#expand-modal.show{display:flex}
+.expand-close{
+  position:fixed;top:16px;right:16px;
+  background:rgba(20,22,35,.9);border:1px solid rgba(255,255,255,.18);
+  color:#fff;width:36px;height:36px;border-radius:10px;cursor:pointer;
+  font-size:15px;display:flex;align-items:center;justify-content:center;
+  transition:.2s;z-index:151;
+}
+.expand-close:hover{background:var(--danger);border-color:var(--danger)}
+.expand-inner{
+  width:88vw;max-width:1080px;height:70vh;background:#000;
+  border-radius:var(--r-lg);overflow:hidden;
+  box-shadow:0 0 80px rgba(0,0,0,.8);animation:rise .25s cubic-bezier(.34,1.56,.64,1);
+}
+.expand-inner img,.expand-inner video{width:100%;height:100%;object-fit:contain;display:block}
+.frame-bar{
+  display:flex;align-items:center;gap:12px;
+  width:88vw;max-width:1080px;padding:10px 14px;
+  background:rgba(20,22,35,.85);backdrop-filter:blur(10px);
+  border:1px solid var(--border);border-radius:var(--r-md);
+}
+.frame-time{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text-mute);min-width:90px}
+.capture-btn{
+  margin-left:auto;
+  background:linear-gradient(135deg,rgba(124,92,255,.12),rgba(0,212,255,.08));
+  border:1px solid rgba(124,92,255,.35);color:var(--accent);
+  font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.4px;
+  padding:7px 14px;border-radius:8px;cursor:pointer;white-space:nowrap;transition:.2s;
+}
+.capture-btn:hover{background:var(--grad-2);color:#fff;border-color:transparent}
+.capture-btn:disabled{opacity:.5;cursor:wait}
+.gallery-date{
+  position:absolute;bottom:8px;right:40px;
+  font-family:'JetBrains Mono',monospace;font-size:10px;
+  color:rgba(255,255,255,.6);pointer-events:none;text-shadow:0 1px 4px rgba(0,0,0,.9);
+}
+
+/* ═══════════ RESULTS HEADER ═══════════ */
+.results-header{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:18px;flex-wrap:wrap;gap:10px;
+}
+.results-title{
+  font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:18px;
+  display:flex;align-items:center;gap:10px;
+}
+.empty{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:60px 20px;color:var(--text-mute);text-align:center;gap:14px;
+  border:1px dashed var(--border);border-radius:var(--r-lg);
+}
+.empty .ico{font-size:42px;opacity:.5}
+.empty h3{font-family:'Space Grotesk',sans-serif;font-weight:600;color:var(--text-dim);font-size:16px}
+.empty p{font-size:13px;max-width:300px;line-height:1.6}
+
+/* ═══════════ STATUS ═══════════ */
+.status-card{
+  margin-bottom:18px;padding:16px 18px;border-radius:var(--r-lg);
+  background:linear-gradient(135deg,rgba(124,92,255,.1),rgba(0,212,255,.06));
+  border:1px solid rgba(124,92,255,.3);
+  display:flex;align-items:center;gap:14px;
+}
+.spinner{
+  width:22px;height:22px;border-radius:50%;
+  border:2.5px solid rgba(124,92,255,.25);border-top-color:#7c5cff;
+  animation:spin .8s linear infinite;flex-shrink:0;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ═══════════ TOAST ═══════════ */
+#toasts{position:fixed;bottom:24px;right:24px;z-index:200;display:flex;flex-direction:column;gap:10px;max-width:360px}
+.toast{
+  padding:14px 18px;border-radius:var(--r-md);
+  background:rgba(20,22,35,.95);backdrop-filter:blur(16px);
+  border:1px solid var(--border);color:var(--text);
+  box-shadow:0 16px 40px rgba(0,0,0,.4);font-size:13px;
+  animation:slideIn .3s cubic-bezier(.2,.8,.2,1);
+  display:flex;align-items:flex-start;gap:10px;
+  word-break:break-word;overflow-wrap:break-word;
+  max-width:360px;
+}
+.toast.success{border-color:rgba(46,204,113,.4)}
+.toast.error{border-color:rgba(255,85,119,.4)}
+.toast.warning{border-color:rgba(255,170,51,.4)}
+@keyframes slideIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:none}}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* ═══════════ MODAL ═══════════ */
+#modal{
+  position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(10px);
+  z-index:100;display:none;align-items:center;justify-content:center;padding:20px;
+}
+#modal.show{display:flex}
+.modal-box{
+  background:var(--bg-2);border:1px solid var(--border);border-radius:var(--r-xl);
+  padding:28px;max-width:420px;width:100%;animation:rise .3s;
+}
+.modal-box h3{font-family:'Space Grotesk',sans-serif;margin-bottom:8px;font-size:18px}
+.modal-box p{color:var(--text-dim);font-size:14px;margin-bottom:20px;line-height:1.5}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end}
+
+/* ═══════════ SEND-TO ═══════════ */
+.send-to-wrap{position:absolute;bottom:8px;left:8px;z-index:4}
+.send-to-btn{
+  background:rgba(0,0,0,.65);backdrop-filter:blur(4px);
+  border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.75);
+  width:28px;height:28px;border-radius:8px;cursor:pointer;
+  font-size:13px;display:flex;align-items:center;justify-content:center;transition:.2s;
+  font-family:'JetBrains Mono',monospace;
+}
+.send-to-btn:hover{background:rgba(124,92,255,.2);border-color:var(--accent);color:var(--accent)}
+.send-to-portal{
+  position:fixed;background:var(--bg-3);border:1px solid var(--border);
+  border-radius:var(--r-md);padding:6px 0;min-width:180px;
+  box-shadow:0 12px 32px rgba(0,0,0,.6);z-index:9000;
+}
+.send-to-portal-item{
+  display:block;width:100%;padding:10px 14px;
+  font-family:'JetBrains Mono',monospace;font-size:12px;
+  color:var(--text-dim);background:none;border:none;cursor:pointer;
+  text-align:left;transition:.12s;white-space:nowrap;
+}
+.send-to-portal-item:hover{color:var(--accent);background:rgba(124,92,255,.08)}
+
+/* ═══════════ PANEL TITLE ═══════════ */
+.panel-title{
+  font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:16px;
+  display:flex;align-items:center;gap:10px;margin-bottom:18px;color:var(--text);
+}
+.panel-title .icon-wrap{
+  width:32px;height:32px;border-radius:10px;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,rgba(124,92,255,.15),rgba(0,212,255,.08));
+  border:1px solid rgba(124,92,255,.25);
+}
+
+/* ═══════════ MOBILE ═══════════ */
+@media (max-width: 980px){
+  .workspace{grid-template-columns:1fr;padding:16px}
+  .panel.tall{min-height:auto}
+  header.topbar{padding:12px 16px;gap:12px;flex-wrap:wrap}
+  .brand{font-size:17px}
+  .chip{padding:6px 12px;font-size:12px}
+  .btn{padding:8px 12px;font-size:12px}
+  .jobs-grid{grid-template-columns:1fr}
+  .expand-inner {
+    width: calc(100vw - 24px) !important;
+    max-width: 1080px !important;
+    height: 60vh !important;
+    margin: 0 12px !important;
+  }
+  .frame-bar {
+    width: calc(100vw - 24px) !important;
+    max-width: 1080px !important;
+    margin: 0 12px !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 10px 14px !important;
+    flex-wrap: nowrap !important;
+  }
+  .capture-btn {
+    margin-left: auto !important;
+  }
+  .plib-header{flex-direction:column}
+}
+@media (max-width: 768px) {
+  header.topbar {
+    display: grid !important;
+    grid-template-columns: 1fr auto !important;
+    grid-template-areas: 
+      "left right"
+      "center center" !important;
+    gap: 12px !important;
+    padding: 12px 14px !important;
+  }
+  .topbar-left { grid-area: left; display: flex; align-items: center; }
+  .topbar-right { grid-area: right; display: flex; align-items: center; gap: 8px; }
+  .topbar-center { 
+    grid-area: center; 
+    display: flex; 
+    gap: 8px; 
+    width: 100%;
+  }
+  .topbar-center .chip {
+    flex: 1;
+    min-width: 0;
+    justify-content: center;
+    font-size: 11px;
+    padding: 8px 10px;
+    overflow: hidden;
+  }
+  .topbar-center .chip span, .topbar-center .chip b {
+    display: inline-block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .brand-text { display: inline !important; }
+}
+@media (max-width: 560px){
+  .topbar .spacer{display:none}
+  .field-row, .field-row-3{grid-template-columns:1fr}
+  .brand-text{display:inline !important}
+  .expand-inner {
+    width: calc(100vw - 16px) !important;
+    height: 50vh !important;
+    border-radius: var(--r-md) !important;
+    margin: 0 8px !important;
+  }
+  .frame-bar {
+    width: calc(100vw - 16px) !important;
+    border-radius: var(--r-md) !important;
+    margin: 0 8px !important;
+    padding: 8px 12px !important;
+  }
+}
+@media (max-width: 480px) {
+  header.topbar { gap: 8px !important; padding: 8px 10px !important; }
+  #toasts {
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+    max-width: none;
+  }
+  .toast {
+    padding: 10px 14px;
+    font-size: 12px;
+  }
+}
+
+/* ═══════════ SLIDER ═══════════ */
+.slider-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+.slider-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.slider-input {
+  flex: 1;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(8, 9, 16, 0.55);
+  border: 1px solid var(--border);
+  outline: none;
+  cursor: pointer;
+  transition: border-color .18s, box-shadow .18s;
+}
+.slider-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(124, 92, 255, 0.16);
+}
+.slider-input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 10px rgba(124, 92, 255, 0.6);
+  transition: transform 0.1s, background-color 0.1s;
+}
+.slider-input::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+  background: var(--accent-2);
+}
+.slider-input::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border: none;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 10px rgba(124, 92, 255, 0.6);
+  transition: transform 0.1s, background-color 0.1s;
+  cursor: pointer;
+}
+.slider-input::-moz-range-thumb:hover {
+  transform: scale(1.2);
+  background: var(--accent-2);
+}
+.slider-val {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  color: var(--text-dim);
+  min-width: 48px;
+  text-align: right;
+  font-weight: 600;
+}
+</style>
+</head>
+<body>
+<canvas id="frame-canvas" style="display:none"></canvas>
+<div class="app">
+
+  <!-- ═══════ TOP BAR ═══════ -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <div class="brand">
+        <span class="brand-dot"></span>
+        <span class="brand-text">AI STUDIO</span>
+      </div>
+    </div>
+
+    <div class="topbar-center">
+      <div class="chip" id="balance-chip">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <b id="balance-text">— hesap</b>
+      </div>
+    </div>
+
+    <div class="topbar-right">
+      <a class="btn danger ghost" href="/logout" title="Çıkış">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="M10 17l-5-5 5-5M5 12h12"/></svg>
+      </a>
+    </div>
+  </header>
+
+  <!-- ═══════ WORKSPACE ═══════ -->
+  <div class="workspace">
+
+    <!-- FORM PANEL -->
+    <aside class="panel tall" id="form-panel">
+      <div class="panel-title">
+        <div class="icon-wrap">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="14" height="12" rx="2"/><path d="M22 8l-6 4 6 4z"/></svg>
+        </div>
+        Video Üretimi
+      </div>
+
+      <div class="form-section" id="dynamic-form">
+        <!-- Dinamik olarak doldurulacak -->
+      </div>
+
+      <div style="height:14px"></div>
+
+      <button class="generate-btn" id="btn-generate">
+        ✨ Üretimi Başlat
+      </button>
+    </aside>
+
+    <!-- RESULTS PANEL -->
+    <section class="panel tall" id="results-panel">
+      <div class="results-tabs" id="results-tabs">
+        <button class="results-tab active" data-rtab="jobs">🎬 Üretimler <span class="rtab-count" id="jobs-count">0</span></button>
+        <button class="results-tab" data-rtab="gallery">🗂️ Galeri <span class="rtab-count" id="gallery-count">0</span></button>
+        <button class="results-tab" data-rtab="prompts">📝 Promptlar <span class="rtab-count" id="prompts-count">0</span></button>
+      </div>
+
+      <!-- Jobs Tab -->
+      <div class="tab-panel active" id="tab-jobs">
+        <div class="results-header">
+          <div class="results-title">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z"/></svg>
+            Üretimler
+          </div>
+          <button class="btn ghost" id="btn-clear-jobs" style="font-size:12px">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+            Temizle
+          </button>
+        </div>
+        <div id="status-area"></div>
+        <div class="empty" id="jobs-empty">
+          <div class="ico">🎬</div>
+          <h3>Henüz üretim yok</h3>
+          <p>Solda parametreleri ayarla ve <b>Üretimi Başlat</b>'a bas — sonuçlar burada görünecek.</p>
+        </div>
+        <div id="jobs-grid" class="jobs-grid"></div>
+      </div>
+
+      <!-- Gallery Tab -->
+      <div class="tab-panel" id="tab-gallery">
+        <div class="results-header">
+          <div class="results-title">🗂️ Galeri</div>
+          <button class="btn ghost" id="btn-clear-gallery" style="font-size:12px">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+            Temizle
+          </button>
+        </div>
+        <div class="empty" id="gallery-empty">
+          <div class="ico">🗂️</div>
+          <h3>Galeri boş</h3>
+          <p>Tamamlanan üretimler otomatik olarak galeriye eklenir.</p>
+        </div>
+        <div id="gallery-grid" class="jobs-grid"></div>
+      </div>
+
+      <!-- Prompts Tab -->
+      <div class="tab-panel" id="tab-prompts">
+        <div class="plib-header" style="flex-direction: column; gap: 8px; align-items: stretch; display: flex; margin-bottom: 14px;">
+          <input type="text" class="plib-input" id="plib-title-input" placeholder="Başlık (opsiyonel)..." style="font-weight: 600;">
+          <div style="display: flex; gap: 10px;">
+            <input type="text" class="plib-input" id="plib-input" placeholder="Prompt girin veya mevcut promptı kaydedin...">
+            <button class="plib-save-btn" id="plib-save-btn">Kaydet</button>
+          </div>
+        </div>
+        <div class="empty" id="prompts-empty">
+          <div class="ico">📝</div>
+          <h3>Kayıtlı prompt yok</h3>
+          <p>Yukarıdan prompt ekleyin, dilediğinizde tek tıkla kullanın.</p>
+        </div>
+        <div class="plib-list" id="plib-list"></div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<!-- EXPAND MODAL -->
+<div id="expand-modal">
+  <button class="expand-close" id="expand-close">✕</button>
+  <div class="expand-inner" id="expand-inner"></div>
+  <div class="frame-bar" id="frame-bar" style="display:none">
+    <span class="frame-time" id="frame-time">0:00 / 0:00</span>
+    <button class="capture-btn" id="capture-ref-btn">📷 → Referans Görsel</button>
+  </div>
+</div>
+
+<!-- TOASTS -->
+<div id="toasts"></div>
+
+<!-- MODAL -->
+<div id="modal">
+  <div class="modal-box">
+    <h3 id="modal-title">Onay</h3>
+    <p id="modal-body">…</p>
+    <div class="modal-actions">
+      <button class="btn" id="modal-cancel">Vazgeç</button>
+      <button class="btn primary" id="modal-ok">Tamam</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════════════════════════════
+const state = {
+  models: null, task: 'video', model: null, mode: null,
+  videoForm: {},
+  get form() { return this.videoForm; },
+  set form(val) { this.videoForm = val; },
+  fileSlots: {},
+  audioUrl: null, audioName: null,
+  generating: false, activeJobs: {}, galleryItems: [], savedPrompts: [],
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  UTIL
+// ═══════════════════════════════════════════════════════════════════════════
+const $ = (q, p=document) => p.querySelector(q);
+const $$ = (q, p=document) => [...p.querySelectorAll(q)];
+
+function toast(msg, type='info', timeout=4500){
+  let sanitizedMsg = msg;
+  const lowerMsg = String(msg).toLowerCase();
+  if (lowerMsg.includes('spamok') || lowerMsg.includes('apixo') || lowerMsg.includes('kredi') || lowerMsg.includes('yetersiz')) {
+    sanitizedMsg = 'Bir hata oluştu.';
+  }
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.innerHTML = `<div>${sanitizedMsg}</div>`;
+  $('#toasts').appendChild(el);
+  setTimeout(()=>{ el.style.opacity='0'; el.style.transform='translateX(20px)'; setTimeout(()=>el.remove(), 300); }, timeout);
+}
+
+async function api(path, opts={}){
+  opts.headers = opts.headers || {};
+  if(opts.body && !(opts.body instanceof FormData)){
+    opts.headers['Content-Type'] = 'application/json';
+    if(typeof opts.body !== 'string') opts.body = JSON.stringify(opts.body);
+  }
+  const r = await fetch(path, opts);
+  let j; try { j = await r.json(); } catch { j = {}; }
+  if(!r.ok) throw new Error(j.error || `HTTP ${r.status}`);
+  return j;
+}
+
+function confirmModal(title, body){
+  return new Promise(resolve=>{
+    $('#modal-title').textContent = title;
+    $('#modal-body').textContent = body;
+    $('#modal').classList.add('show');
+    const ok = ()=>{ cleanup(); resolve(true); };
+    const cancel = ()=>{ cleanup(); resolve(false); };
+    function cleanup(){
+      $('#modal').classList.remove('show');
+      $('#modal-ok').removeEventListener('click', ok);
+      $('#modal-cancel').removeEventListener('click', cancel);
+    }
+    $('#modal-ok').addEventListener('click', ok);
+    $('#modal-cancel').addEventListener('click', cancel);
+  });
+}
+
+function escapeHtml(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+function copyText(text){ if(navigator.clipboard) navigator.clipboard.writeText(text).then(()=> toast('✅ Kopyalandı!','success',2000)); }
+function formatTime(s){ s=Math.round(s||0); return Math.floor(s/60)+':'+String(s%60).padStart(2,'0'); }
+function formatDate(ts){ if(!ts) return ''; const d=new Date(ts); return d.toLocaleDateString('tr-TR',{day:'2-digit',month:'2-digit',year:'2-digit'})+' '+d.toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'}); }
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  ACCOUNT INFO
+// ═══════════════════════════════════════════════════════════════════════════
+async function loadAccountInfo(){
+  try{
+    const j = await api('/api/account-info');
+    const available = j.available || 0;
+    $('#balance-text').textContent = available + ' hesap';
+    $('#balance-chip').classList.remove('warning','danger');
+    if(available <= 0) $('#balance-chip').classList.add('danger');
+    else if(available < 5) $('#balance-chip').classList.add('warning');
+  }catch(e){
+    $('#balance-text').textContent = '— hesap';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  FORM BUILDER
+// ═══════════════════════════════════════════════════════════════════════════
+function buildForm(){
+  const form = $('#dynamic-form');
+  form.innerHTML = '';
+  const modelCfg = state.models[state.model];
+  const modes = modelCfg.modes;
+  const modeCfg = modes[state.mode];
+  const defaults = modeCfg.default_params;
+  for(const k in defaults){ if(state.form[k] === undefined) state.form[k] = defaults[k]; }
+  state.form.mode = state.mode;
+
+  // Validate and correct values
+  if(modeCfg.supported_resolutions && !modeCfg.supported_resolutions.includes(state.form.resolution)){
+    state.form.resolution = modeCfg.supported_resolutions[0];
+  }
+  if(state.model === 'grok-video'){
+    const maxDur = state.form.resolution === '720p' ? 16 : 30;
+    const durationValue = Number(state.form.duration);
+    const fallback = Number.isFinite(durationValue) ? durationValue : Number(defaults.duration || 14);
+    state.form.duration = Math.min(Math.max(fallback, 6), maxDur);
+  }else if(state.model === 'wan-2-5-video'){
+    const allowed = state.form.resolution === '720p' ? [5] : [5, 10];
+    const durationValue = Number(state.form.duration);
+    if(!allowed.includes(durationValue)){
+      state.form.duration = allowed.includes(defaults.duration) ? defaults.duration : allowed[0];
+    }
+  }else if(modeCfg.supported_durations){
+    const durationValue = Number(state.form.duration);
+    if(!modeCfg.supported_durations.includes(durationValue)){
+      state.form.duration = modeCfg.supported_durations[0];
+    }
+  }
+  if(modeCfg.supported_ratios && !modeCfg.supported_ratios.includes(state.form.aspect_ratio)){
+    state.form.aspect_ratio = modeCfg.supported_ratios[0];
+  }
+
+  // Model selector
+  const headerWrap = document.createElement('div');
+  headerWrap.className = 'field';
+  headerWrap.innerHTML = `<div class="field-label">Model <span class="hint">${modelCfg.display_name}</span></div>`;
+  const modelKeys = Object.keys(state.models).filter(k => state.models[k].type === 'video');
+  if(modelKeys.length > 1){
+    const sel = document.createElement('select');
+    sel.className = 'select';
+    sel.value = state.model;
+    modelKeys.forEach(k => {
+      const opt = document.createElement('option');
+      opt.value = k; opt.textContent = state.models[k].display_name;
+      if(k===state.model) opt.selected = true;
+      sel.appendChild(opt);
+    });
+    sel.onchange = () => { state.model = sel.value; state.mode = Object.keys(state.models[state.model].modes)[0]; buildForm(); };
+    headerWrap.appendChild(sel);
+  }
+  form.appendChild(headerWrap);
+
+  // Mode chips
+  if(Object.keys(modes).length > 1){
+    const modeWrap = document.createElement('div');
+    modeWrap.className = 'field';
+    modeWrap.innerHTML = `<div class="field-label">Mod</div>`;
+    const chips = document.createElement('div');
+    chips.className = 'chips';
+    Object.keys(modes).forEach(mk => {
+      const c = document.createElement('button');
+      c.type = 'button';
+      c.className = 'chip-opt' + (mk===state.mode ? ' active':'');
+      c.textContent = modes[mk].display_name || mk;
+      c.onclick = () => {
+        state.mode = mk;
+        buildForm();
+      };
+      chips.appendChild(c);
+    });
+    modeWrap.appendChild(chips);
+    form.appendChild(modeWrap);
+  }
+
+  // Prompt
+  form.appendChild(makeField('Prompt', textarea('prompt', state.form.prompt || '', 'Sahneyi tarif et…')));
+  form.appendChild(makeField('Negatif Prompt (opsiyonel)', textarea('negative_prompt', state.form.negative_prompt || '', 'İstenmeyen detaylar…', 60)));
+
+  // Video fields
+  form.appendChild(makeField('Çözünürlük', chipGroup('resolution', modeCfg.supported_resolutions, state.form.resolution)));
+  const row = document.createElement('div'); row.className = 'field-row';
+  let durationControl;
+  if(state.model === 'grok-video'){
+    const maxDur = state.form.resolution === '720p' ? 16 : 30;
+    durationControl = rangeInput('duration', state.form.duration, 6, maxDur, 1);
+  }else if(state.model === 'wan-2-5-video'){
+    const allowed = state.form.resolution === '720p' ? [5] : [5, 10];
+    durationControl = chipGroup('duration', allowed, state.form.duration, true);
+  }else{
+    durationControl = chipGroup('duration', modeCfg.supported_durations, state.form.duration, true);
+  }
+  row.appendChild(makeField('Süre (sn)', durationControl));
+  row.appendChild(makeField('Aspect Ratio', chipGroup('aspect_ratio', modeCfg.supported_ratios, state.form.aspect_ratio)));
+  form.appendChild(row);
+
+  if(state.model === 'veo-3-1'){
+    if(state.mode === 'start_end_frame'){
+      form.appendChild(makeField('Başlangıç Görseli', dropzone('veo_start')));
+      form.appendChild(makeField('Bitiş Görseli (opsiyonel)', dropzone('veo_end')));
+    }else if(state.mode === 'reference'){
+      form.appendChild(makeField('Referans 1', dropzone('veo_ref1')));
+      form.appendChild(makeField('Referans 2 (opsiyonel)', dropzone('veo_ref2')));
+      form.appendChild(makeField('Referans 3 (opsiyonel)', dropzone('veo_ref3')));
+    }
+  }else{
+    if(modeCfg.needs_image){ form.appendChild(makeField('Referans Görsel (zorunlu)', dropzone('legacy_image'))); }
+    if(modeCfg.supports_audio){ form.appendChild(makeField('Ses Dosyası (opsiyonel)', dropzone('legacy_audio', true))); }
+  }
+
+  form.appendChild(makeField('Seed (opsiyonel)', input('seed', state.form.seed || '', 'Sabit sonuç için sayı')));
+  // Watermark
+  const wmWrap = document.createElement('div'); wmWrap.className = 'field';
+  const wmSw = document.createElement('label'); wmSw.className = 'switch';
+  wmSw.innerHTML = `<input type="checkbox" ${state.form.watermark?'checked':''}><span class="track"></span><span>Filigran (watermark)</span>`;
+  wmSw.querySelector('input').onchange = e => { state.form.watermark = e.target.checked; };
+  wmWrap.appendChild(wmSw);
+  form.appendChild(wmWrap);
+  // Prompt expansion
+  const swWrap = document.createElement('div'); swWrap.className = 'field';
+  const sw = document.createElement('label'); sw.className = 'switch';
+  sw.innerHTML = `<input type="checkbox" ${state.form.enable_prompt_expansion?'checked':''}><span class="track"></span><span>Prompt'u otomatik genişlet</span>`;
+  sw.querySelector('input').onchange = e => { state.form.enable_prompt_expansion = e.target.checked; };
+  swWrap.appendChild(sw);
+  form.appendChild(swWrap);
+}
+
+function makeField(label, control){
+  const w = document.createElement('div'); w.className = 'field';
+  const l = document.createElement('div'); l.className = 'field-label'; l.textContent = label;
+  w.appendChild(l); w.appendChild(control); return w;
+}
+function input(key, val, ph=''){
+  const i = document.createElement('input'); i.className = 'input'; i.value = val; i.placeholder = ph;
+  i.oninput = () => { state.form[key] = i.value; }; return i;
+}
+function numberInput(key, val, min, max, step=1, ph=''){
+  const i = document.createElement('input');
+  i.type = 'number';
+  i.className = 'input';
+  i.value = val;
+  i.min = min;
+  i.max = max;
+  i.step = step;
+  i.placeholder = ph;
+  i.oninput = () => { state.form[key] = i.value === '' ? '' : Number(i.value); };
+  return i;
+}
+function textarea(key, val, ph='', minH=90){
+  const i = document.createElement('textarea'); i.className = 'textarea'; i.value = val; i.placeholder = ph;
+  i.style.minHeight = minH + 'px'; i.oninput = () => { state.form[key] = i.value; }; return i;
+}
+function chipGroup(key, opts, current, numeric=false){
+  const wrap = document.createElement('div'); wrap.className = 'chips';
+  opts.forEach(opt => {
+    const b = document.createElement('button'); b.type = 'button';
+    b.className = 'chip-opt' + ((opt == current) ? ' active' : '');
+    b.textContent = opt;
+    b.onclick = () => {
+      state.form[key] = numeric ? Number(opt) : opt;
+      wrap.querySelectorAll('.chip-opt').forEach(x => x.classList.remove('active'));
+      b.classList.add('active');
+      if (key === 'resolution' && (state.model === 'grok-video' || state.model === 'wan-2-5-video')) {
+        buildForm();
+      }
+    };
+    wrap.appendChild(b);
+  });
+  if(state.form[key] === undefined) state.form[key] = numeric ? Number(opts[0]) : opts[0];
+  return wrap;
+}
+
+function rangeInput(key, val, min, max, step=1){
+  const wrap = document.createElement('div');
+  wrap.className = 'slider-wrap';
+  const row = document.createElement('div');
+  row.className = 'slider-row';
+  const i = document.createElement('input');
+  i.type = 'range';
+  i.className = 'slider-input';
+  i.value = val;
+  i.min = min;
+  i.max = max;
+  i.step = step;
+  const valDisp = document.createElement('div');
+  valDisp.className = 'slider-val';
+  valDisp.textContent = val + ' sn';
+  i.oninput = () => {
+    state.form[key] = Number(i.value);
+    valDisp.textContent = i.value + ' sn';
+  };
+  row.appendChild(i);
+  row.appendChild(valDisp);
+  wrap.appendChild(row);
+  return wrap;
+}
+
+function sanitizeLogLine(line) {
+  if (!line) return '';
+  if (line.includes('giriş yapılıyor') || line.includes('giriş yapılıyor:') || line.includes('spamok')) {
+    return 'Video üretimi için sunucu hazırlanıyor...';
+  }
+  if (line.includes('Giriş başarılı, üretim başlatılıyor...')) {
+    return 'Video üretimi başlatılıyor...';
+  }
+  if (line.startsWith('Task ID:')) {
+    return line.replace('Task ID:', 'Üretim Kodu:');
+  }
+  if (line.startsWith('State:')) {
+    const match = line.match(/^State:\s*(\w+)\s*\((.+)\)$/i);
+    if (match) {
+      let stateVal = match[1].toLowerCase();
+      const timeVal = match[2];
+      if (stateVal === 'queued') stateVal = 'Sırada';
+      else if (stateVal === 'processing' || stateVal === 'generating') stateVal = 'Video üretiliyor';
+      else if (stateVal === 'success') stateVal = 'Tamamlandı';
+      else if (stateVal === 'failed') return 'Hata oluştu.';
+      else stateVal = 'Video üretiliyor';
+      return `Durum: ${stateVal} (${timeVal})`;
+    }
+  }
+  const lower = line.toLowerCase();
+  if (lower.includes('hata') || 
+      lower.includes('error') || 
+      lower.includes('başarısız') || 
+      lower.includes('kredi') || 
+      lower.includes('apixo') || 
+      lower.includes('login') || 
+      lower.includes('kullanılabilir hesap') ||
+      lower.includes('failed') || 
+      lower.includes('timeout') || 
+      lower.includes('zaman aşımı')) {
+    return 'Hata oluştu.';
+  }
+  return line;
+}
+
+function dropzone(slotKey, isAudio=false){
+  const wrap = document.createElement('div');
+  const dz = document.createElement('div'); dz.className = 'dropzone';
+  dz.innerHTML = `<div class="dz-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a89dff" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg></div>
+    <div class="dz-text"><b>Dosya seç</b> ya da buraya sürükle<br><span style="font-size:11px;color:var(--text-mute)">${isAudio?'mp3 · wav · m4a':'jpg · png · webp'} · max 1</span></div>
+    <input type="file" accept="${isAudio?'audio/*':'image/*'}">`;
+  const fileInput = dz.querySelector('input[type=file]');
+  dz.onclick = (e) => {
+    if (e.target.tagName !== 'INPUT') {
+      fileInput.click();
+    }
+  };
+  const previews = document.createElement('div'); previews.className = 'previews';
+  const refresh = () => {
+    previews.innerHTML = '';
+    const slot = state.fileSlots[slotKey] || null;
+    if (slot) {
+      dz.style.display = 'none';
+      const pe = document.createElement('div'); pe.className = 'preview'+(isAudio?' audio':'');
+      if(isAudio) pe.textContent = '🎵 '+(slot.name||'audio');
+      else pe.innerHTML = `<img src="${slot.dataUrl}">`;
+      const xBtn = document.createElement('button'); xBtn.className='x'; xBtn.textContent='×';
+      xBtn.onclick = e => {
+        e.preventDefault(); e.stopPropagation();
+        delete state.fileSlots[slotKey];
+        refresh();
+      };
+      pe.appendChild(xBtn); previews.appendChild(pe);
+    } else {
+      dz.style.display = '';
+    }
+  };
+  const handleFiles = async files => {
+    files = [...files].slice(0,1);
+    for(const file of files){
+      const dataUrl = !isAudio ? await readAsDataURL(file) : null;
+      const fd = new FormData(); fd.append('file',file);
+      try{
+        const r=await fetch('/api/upload',{method:'POST',body:fd}); const j=await r.json();
+        if(!r.ok) throw new Error(j.error||'upload failed');
+        state.fileSlots[slotKey] = {name:file.name, url:j.url, dataUrl};
+        refresh();
+        toast(`✅ ${file.name} yüklendi`,'success',2500);
+      }catch(e){
+        toast('Yükleme hatası: '+e.message,'error');
+      }
+    }
+  };
+  fileInput.onchange = e => handleFiles(e.target.files);
+  dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('dragover'); });
+  dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
+  dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('dragover'); handleFiles(e.dataTransfer.files); });
+  wrap.appendChild(dz); wrap.appendChild(previews); refresh(); return wrap;
+}
+
+function readAsDataURL(file){ return new Promise(res => { const r=new FileReader(); r.onload=()=>res(r.result); r.readAsDataURL(file); }); }
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  TABS (Right panel)
+// ═══════════════════════════════════════════════════════════════════════════
+$$('#results-tabs .results-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    $$('#results-tabs .results-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    $$('.tab-panel').forEach(p => p.classList.remove('active'));
+    $(`#tab-${tab.dataset.rtab}`).classList.add('active');
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  JOB CARD SYSTEM
+// ═══════════════════════════════════════════════════════════════════════════
+function updateJobsCount(){
+  const count=Object.keys(state.activeJobs).length;
+  $('#jobs-count').textContent=count;
+  const empty=$('#jobs-empty'); const grid=$('#jobs-grid');
+  if (empty && grid) {
+    const hasItems = grid.children.length > 0 || count > 0;
+    empty.style.display = hasItems ? 'none' : 'flex';
+  }
+}
+
+function createJobCard(jobId, prompt, model, taskType){
+  $('#jobs-empty').style.display='none';
+  state.activeJobs[jobId]={prompt,model,taskType};
+  const card=document.createElement('div'); card.className='job-card'; card.id='job-'+jobId;
+  card.innerHTML=`
+    <div class="job-thumb">
+      <div class="job-status-badge badge-running">PROCESSING</div>
+      <div class="job-progress"><div class="job-progress-fill" id="prog-${jobId}" style="width:2%"></div></div>
+      <button class="job-delete-btn" title="Sil">✕</button>
+    </div>
+    <div class="job-body">
+      <div class="prompt-row">
+        <div class="job-prompt" title="${escapeHtml(prompt)}">${escapeHtml(prompt)}</div>
+        <button class="copy-prompt-btn" data-prompt="${escapeHtml(prompt)}">📋</button>
+      </div>
+      <div class="job-meta"><span class="meta-tag">VIDEO</span><span class="meta-tag">${model}</span></div>
+      <div class="job-log" id="log-${jobId}"></div>
+    </div>`;
+  card.querySelector('.copy-prompt-btn').addEventListener('click', function(){ copyText(this.dataset.prompt); });
+  card.querySelector('.job-delete-btn').addEventListener('click', async ()=>{
+    card.remove(); delete state.activeJobs[jobId]; updateJobsCount();
+    try{ await fetch('/api/delete-job/'+jobId,{method:'DELETE'}); }catch(e){}
+  });
+  $('#jobs-grid').prepend(card);
+  updateJobsCount();
+}
+
+function pollJob(jobId){
+  const iv=setInterval(async ()=>{
+    try{
+      const res=await fetch('/api/job-status/'+jobId);
+      if(!res.ok){clearInterval(iv);return;}
+      const data=await res.json();
+      const logEl=$('#log-'+jobId);
+      if(logEl && data.logs){
+        logEl.innerHTML=data.logs.map((l,i)=>`<div class="log-line ${i===data.logs.length-1?'latest':''}">${escapeHtml(sanitizeLogLine(l))}</div>`).join('');
+        logEl.scrollTop=logEl.scrollHeight;
+      }
+      const prog=$('#prog-'+jobId);
+      if(prog && (data.status==='polling' || data.status==='logging_in' || data.status==='generating')){
+        const lc=(data.logs||[]).length;
+        prog.style.width=Math.min(5+lc*3,90)+'%';
+      }
+      if(data.status==='done' && data.result_urls && data.result_urls.length){
+        clearInterval(iv); finishJob(jobId,data);
+      }else if(data.status==='error'){
+        clearInterval(iv); errorJob(jobId);
+      }
+    }catch(e){}
+  },4000);
+}
+
+function finishJob(jobId, data){
+  const card=$('#job-'+jobId); if(!card) return;
+  const urls=data.result_urls||[]; const firstUrl=urls[0];
+  const prompt=state.activeJobs[jobId]?.prompt||'';
+  const model=state.activeJobs[jobId]?.model||'';
+  const thumb=card.querySelector('.job-thumb');
+  thumb.innerHTML=`<video src="${escapeHtml(firstUrl)}" autoplay loop muted playsinline></video><div class="job-status-badge badge-done">DONE</div><button class="expand-btn" title="Büyüt">⛶</button><button class="job-delete-btn" title="Sil">✕</button>`;
+  bindThumbEvents(thumb,firstUrl,'video',jobId,'job');
+  const body=card.querySelector('.job-body');
+  const log=body.querySelector('.job-log'); if(log) log.remove();
+  urls.forEach(url=>{
+    const a=document.createElement('a'); a.className='btn-download';
+    a.href=`/api/proxy-media?url=${encodeURIComponent(url)}&dl=1`;
+    a.setAttribute('download', '');
+    a.innerHTML=`⬇ İndir Video`; body.appendChild(a);
+  });
+  const prog=$('#prog-'+jobId); if(prog) prog.style.width='100%';
+  saveToGallery({id:jobId,prompt,model,taskType:'video',url:firstUrl,timestamp:Date.now()});
+  toast(`🎉 Video hazır!`,'success');
+  loadAccountInfo();
+  delete state.activeJobs[jobId]; updateJobsCount();
+}
+
+function errorJob(jobId){
+  const badge=$(`#job-${jobId} .job-status-badge`);
+  if(badge){badge.className='job-status-badge badge-error';badge.textContent='HATA';}
+  loadAccountInfo();
+  delete state.activeJobs[jobId]; updateJobsCount();
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  SEND-TO SYSTEM (video ref only)
+// ═══════════════════════════════════════════════════════════════════════════
+let _portalMenu=null, _portalTarget=null;
+let _promptPortalMenu=null, _promptPortalTarget=null;
+function closePromptUsePortal(){ if(_promptPortalMenu){_promptPortalMenu.remove();_promptPortalMenu=null;_promptPortalTarget=null;} }
+function closeSendToPortal(){ if(_portalMenu){_portalMenu.remove();_portalMenu=null;_portalTarget=null;} }
+
+function openPromptPortal(btn, text){
+  closePromptUsePortal();
+  const rect=btn.getBoundingClientRect();
+  let left=rect.left, top=rect.bottom+4;
+  if(top+80>window.innerHeight) top=rect.top-84;
+  if(left+190>window.innerWidth) left=window.innerWidth-198;
+  if(left<8) left=8; if(top<8) top=8;
+  
+  const menu=document.createElement('div'); menu.className='send-to-portal';
+  menu.style.cssText=`position:fixed;left:${left}px;top:${top}px;z-index:9000;`;
+  menu.innerHTML=`
+    <button class="send-to-portal-item" data-target="video-prompt">→ Pozitif Prompt</button>
+    <button class="send-to-portal-item" data-target="video-neg">→ Negatif Prompt</button>
+  `;
+  menu.querySelectorAll('.send-to-portal-item').forEach(item=>{
+    item.addEventListener('click',e=>{
+      e.stopPropagation();
+      closePromptUsePortal();
+      const target = item.dataset.target;
+      if (target === 'video-prompt') {
+        state.form.prompt = text;
+      } else if (target === 'video-neg') {
+        state.form.negative_prompt = text;
+      }
+      buildForm();
+      toast('✅ Prompt aktarıldı', 'success');
+    });
+  });
+  document.body.appendChild(menu); _promptPortalMenu=menu; _promptPortalTarget=btn;
+}
+
+document.addEventListener('click',e=>{
+  if(_portalMenu && !_portalMenu.contains(e.target) && e.target!==_portalTarget) closeSendToPortal();
+  if(_promptPortalMenu && !_promptPortalMenu.contains(e.target) && e.target!==_promptPortalTarget) closePromptUsePortal();
+  if(_capturePortalMenu && !_capturePortalMenu.contains(e.target) && e.target!==_capturePortalTarget) closeCapturePortal();
+});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape') { closeSendToPortal(); closePromptUsePortal(); closeCapturePortal(); }
+});
+window.addEventListener('scroll',()=>{ closeSendToPortal(); closePromptUsePortal(); closeCapturePortal(); },true);
+
+async function handleSendTo(action, url){
+  toast('⏳ Aktarılıyor...','info',2000);
+  try{
+    let file = await captureVideoFirstFrame(url);
+    const dataUrl=await readAsDataURL(file);
+    const fd=new FormData(); fd.append('file',file);
+    const r=await fetch('/api/upload',{method:'POST',body:fd}); const j=await r.json();
+    if(!r.ok) throw new Error(j.error || 'Yükleme başarısız');
+
+    const modeKeys=Object.keys(state.models[state.model].modes);
+    if(state.model === 'veo-3-1'){
+      const startMode = modeKeys.includes('start_end_frame') ? 'start_end_frame' : modeKeys[0];
+      state.fileSlots.veo_start = {name:file.name, dataUrl, url:j.url};
+      if(state.mode!==startMode){ state.mode=startMode; }
+    }else{
+      const i2vMode=modeKeys.find(k=>k.includes('image'));
+      state.fileSlots.legacy_image = {name:file.name, dataUrl, url:j.url};
+      if(i2vMode && state.mode!==i2vMode){ state.mode=i2vMode; }
+    }
+    toast('✅ Video referans görseli olarak ayarlandı','success');
+    buildForm();
+  }catch(e){ toast('❌ Aktarım başarısız: '+e.message,'error'); }
+}
+
+async function captureVideoFirstFrame(url){
+  const resp=await fetch('/api/proxy-media?url='+encodeURIComponent(url));
+  const videoBlob=await resp.blob(); const blobUrl=URL.createObjectURL(videoBlob);
+  return new Promise((resolve,reject)=>{
+    const v=document.createElement('video'); v.muted=true; v.preload='auto';
+    v.addEventListener('loadeddata',()=>{v.currentTime=0.1;},{once:true});
+    v.addEventListener('seeked',()=>{
+      const c=document.getElementById('frame-canvas');
+      c.width=v.videoWidth||1280; c.height=v.videoHeight||720;
+      c.getContext('2d').drawImage(v,0,0);
+      c.toBlob(blob=>{URL.revokeObjectURL(blobUrl);if(blob)resolve(new File([blob],'frame.jpg',{type:'image/jpeg'}));else reject(new Error('Blob err'));},'image/jpeg',0.92);
+    },{once:true});
+    v.addEventListener('error',()=>{URL.revokeObjectURL(blobUrl);reject(new Error('Video yüklenemedi'));},{once:true});
+    v.src=blobUrl; v.load();
+  });
+}
+
+function bindThumbEvents(thumb,url,taskType,id,prefix){
+  thumb.querySelector('.expand-btn')?.addEventListener('click',()=>openExpandModal(url,'video'));
+  thumb.querySelector('.job-delete-btn')?.addEventListener('click',async ()=>{
+    const card=document.getElementById(prefix+'-'+id);
+    if(card){
+      card.remove();
+      if(prefix==='job'){delete state.activeJobs[id];updateJobsCount();try{await fetch('/api/delete-job/'+id,{method:'DELETE'});}catch(e){}}
+      else{deleteGalleryItem(id);updateGalleryCount();}
+    }
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  EXPAND MODAL + FRAME CAPTURE
+// ═══════════════════════════════════════════════════════════════════════════
+let currentExpandUrl='', currentExpandType='';
+let frameTimeInterval=null;
+
+function openExpandModal(url,type){
+  currentExpandUrl=url; currentExpandType=type;
+  const inner=$('#expand-inner'); const bar=$('#frame-bar');
+  inner.innerHTML=`<video id="expand-video" controls loop playsinline muted src="${escapeHtml(url)}"></video>`;
+  const vid=inner.querySelector('video'); vid.load(); vid.play().catch(()=>{});
+  bar.style.display='flex';
+  frameTimeInterval=setInterval(()=>{
+    const ft=$('#frame-time');
+    if(ft&&vid) ft.textContent=formatTime(vid.currentTime)+' / '+(isFinite(vid.duration)?formatTime(vid.duration):'?:??');
+  },250);
+  $('#expand-modal').classList.add('show');
+  document.body.style.overflow='hidden';
+}
+
+function closeExpandModal(){
+  closeCapturePortal();
+  $('#expand-modal').classList.remove('show');
+  $('#expand-inner').innerHTML=''; document.body.style.overflow='';
+  if(frameTimeInterval){clearInterval(frameTimeInterval);frameTimeInterval=null;}
+}
+
+$('#expand-close').addEventListener('click',closeExpandModal);
+$('#expand-modal').addEventListener('click',e=>{if(e.target===e.currentTarget)closeExpandModal();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeExpandModal();});
+
+let _capturePortalMenu = null, _capturePortalTarget = null;
+function closeCapturePortal(){ if(_capturePortalMenu){_capturePortalMenu.remove();_capturePortalMenu=null;_capturePortalTarget=null;} }
+
+async function executeCapture(vid) {
+  if (!vid) return;
+
+  const btn = $('#capture-ref-btn');
+  btn.disabled = true;
+  const origText = btn.textContent;
+  btn.textContent = '⏳ Yakalanıyor...';
+  const seekTime = vid.currentTime;
+  try {
+    let file;
+    const canvas = document.getElementById('frame-canvas');
+    canvas.width = vid.videoWidth || 1280;
+    canvas.height = vid.videoHeight || 720;
+    canvas.getContext('2d').drawImage(vid, 0, 0);
+    try {
+      canvas.toDataURL();
+      file = await new Promise((res, rej) => {
+        canvas.toBlob(blob => {
+          if (blob) res(new File([blob], `frame_${Math.round(seekTime)}s.jpg`, { type: 'image/jpeg' }));
+          else rej(new Error('Blob failed'));
+        }, 'image/jpeg', 0.92);
+      });
+    } catch (corsErr) {
+      file = await captureFrameAtTime(currentExpandUrl, seekTime);
+    }
+    
+    closeExpandModal();
+    const dataUrl = await readAsDataURL(file);
+    const fd = new FormData();
+    fd.append('file', file);
+    const r = await fetch('/api/upload', { method: 'POST', body: fd });
+    const j = await r.json();
+    if (!r.ok) throw new Error(j.error || 'Yükleme başarısız');
+
+    const modeKeys = Object.keys(state.models[state.model].modes);
+    if(state.model === 'veo-3-1'){
+      const startMode = modeKeys.includes('start_end_frame') ? 'start_end_frame' : modeKeys[0];
+      state.fileSlots.veo_start = { name: file.name, dataUrl, url: j.url };
+      if (state.mode !== startMode) {
+        state.mode = startMode;
+        state.form = {};
+      }
+    }else{
+      const i2vMode = modeKeys.find(k => k.includes('image'));
+      state.fileSlots.legacy_image = { name: file.name, dataUrl, url: j.url };
+      if (i2vMode && state.mode !== i2vMode) {
+        state.mode = i2vMode;
+        state.form = {};
+      }
+    }
+    toast(`📷 ${formatTime(seekTime)} → Video Referansı yapıldı`, 'success');
+    buildForm();
+  } catch (e) {
+    toast('❌ Frame alınamadı: ' + e.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = origText;
+  }
+}
+
+$('#capture-ref-btn').addEventListener('click', e => {
+  e.stopPropagation();
+  const vid = $('#expand-video');
+  if (!vid) return;
+  executeCapture(vid);
+});
+
+async function captureFrameAtTime(url,seekTime){
+  const resp=await fetch('/api/proxy-media?url='+encodeURIComponent(url));
+  const videoBlob=await resp.blob(); const blobUrl=URL.createObjectURL(videoBlob);
+  return new Promise((resolve,reject)=>{
+    const v=document.createElement('video'); v.muted=true; v.preload='auto';
+    const onS=()=>{ const c=document.getElementById('frame-canvas'); c.width=v.videoWidth||1280; c.height=v.videoHeight||720; c.getContext('2d').drawImage(v,0,0); c.toBlob(blob=>{URL.revokeObjectURL(blobUrl);if(blob)resolve(new File([blob],`frame_${Math.round(seekTime)}s.jpg`,{type:'image/jpeg'}));else reject(new Error('Blob err'));},'image/jpeg',0.92); };
+    v.addEventListener('loadeddata',()=>{if(seekTime<=0.1){onS();}else{v.addEventListener('seeked',onS,{once:true});v.currentTime=Math.min(seekTime,(v.duration||999)-0.05);}},{once:true});
+    v.addEventListener('error',()=>{URL.revokeObjectURL(blobUrl);reject(new Error('Video proxy hatası'));},{once:true});
+    v.src=blobUrl; v.load();
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  GALLERY
+// ═══════════════════════════════════════════════════════════════════════════
+function updateGalleryCount(){
+  const count=$('#gallery-grid').children.length;
+  $('#gallery-count').textContent=count;
+  const empty=$('#gallery-empty'); if(empty) empty.style.display=count>0?'none':'';
+}
+
+async function loadGallery(){
+  try{ const items=await api('/api/gallery'); items.forEach(item=>renderGalleryCard(item,false)); updateGalleryCount(); }catch(e){}
+}
+
+async function saveToGallery(job){
+  try{ await api('/api/gallery',{method:'POST',body:job}); }catch(e){}
+  renderGalleryCard(job,true); updateGalleryCount();
+}
+
+async function deleteGalleryItem(id){ try{await fetch('/api/gallery/'+id,{method:'DELETE'});}catch(e){} }
+
+function renderGalleryCard(job,prepend=true){
+  $('#gallery-empty').style.display='none';
+  const card=document.createElement('div'); card.className='job-card'; card.id='gallery-'+job.id;
+  card.innerHTML=`
+    <div class="job-thumb"><video src="${escapeHtml(job.url)}" autoplay loop muted playsinline></video><div class="job-status-badge badge-done">DONE</div><button class="expand-btn" title="Büyüt">⛶</button><button class="job-delete-btn" title="Sil">✕</button><div class="gallery-date">${formatDate(job.timestamp)}</div></div>
+    <div class="job-body">
+      <div class="prompt-row"><div class="job-prompt" title="${escapeHtml(job.prompt)}">${escapeHtml(job.prompt)}</div><button class="copy-prompt-btn" data-prompt="${escapeHtml(job.prompt)}">📋</button></div>
+      <div class="job-meta"><span class="meta-tag">VIDEO</span><span class="meta-tag">${job.model||''}</span></div>
+      <a class="btn-download" href="/api/proxy-media?url=${encodeURIComponent(job.url)}&dl=1" download>⬇ İndir</a>
+    </div>`;
+  card.querySelector('.copy-prompt-btn').addEventListener('click',function(){copyText(this.dataset.prompt);});
+  bindThumbEvents(card.querySelector('.job-thumb'),job.url,'video',job.id,'gallery');
+  const grid=$('#gallery-grid');
+  if(prepend) grid.prepend(card); else grid.appendChild(card);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  PROMPT LIBRARY
+// ═══════════════════════════════════════════════════════════════════════════
+async function loadPrompts(){
+  try{ const items=await api('/api/prompts'); state.savedPrompts=items; renderPromptLibrary(); }catch(e){}
+}
+
+function renderPromptLibrary(){
+  const list=$('#plib-list'); const empty=$('#prompts-empty');
+  list.innerHTML='';
+  $('#prompts-count').textContent=state.savedPrompts.length;
+  if(!state.savedPrompts.length){empty.style.display='';return;}
+  empty.style.display='none';
+  state.savedPrompts.forEach(p=>{
+    const card=document.createElement('div'); card.className='plib-card'; card.id=`plib-${p.id}`;
+    card.innerHTML=`
+      <div class="plib-card-inputs">
+        <input type="text" class="plib-card-title-input" value="${escapeHtml(p.title || '')}" placeholder="Başlıksız Prompt" readonly>
+        <div class="plib-card-text-display" title="${escapeHtml(p.text)}">${escapeHtml(p.text)}</div>
+        <textarea class="plib-card-text-input" readonly>${escapeHtml(p.text)}</textarea>
+      </div>
+      <div class="plib-actions">
+        <button class="plib-act-btn use">↗ Kullan</button>
+        <button class="plib-act-btn edit-btn">✏️ Düzenle</button>
+        <button class="plib-act-btn save-btn" style="display:none; border-color:var(--success); color:var(--success)">💾 Kaydet</button>
+        <button class="plib-act-btn cancel-btn" style="display:none">Vazgeç</button>
+        <button class="plib-act-btn del">✕ Sil</button>
+      </div>
+    `;
+
+    const titleInp = card.querySelector('.plib-card-title-input');
+    const textInp = card.querySelector('.plib-card-text-input');
+    const editBtn = card.querySelector('.edit-btn');
+    const saveBtn = card.querySelector('.save-btn');
+    const cancelBtn = card.querySelector('.cancel-btn');
+    const useBtn = card.querySelector('.use');
+    const delBtn = card.querySelector('.del');
+
+    const adjustHeight = () => {
+      textInp.style.height = 'auto';
+      textInp.style.height = textInp.scrollHeight + 'px';
+    };
+
+    editBtn.onclick = () => {
+      card.classList.add('editing');
+      titleInp.removeAttribute('readonly');
+      textInp.removeAttribute('readonly');
+      editBtn.style.display = 'none';
+      useBtn.style.display = 'none';
+      delBtn.style.display = 'none';
+      saveBtn.style.display = '';
+      cancelBtn.style.display = '';
+      adjustHeight();
+    };
+
+    cancelBtn.onclick = () => {
+      card.classList.remove('editing');
+      titleInp.setAttribute('readonly', '');
+      textInp.setAttribute('readonly', '');
+      titleInp.value = p.title || '';
+      textInp.value = p.text;
+      editBtn.style.display = '';
+      useBtn.style.display = '';
+      delBtn.style.display = '';
+      saveBtn.style.display = 'none';
+      cancelBtn.style.display = 'none';
+      adjustHeight();
+    };
+
+    textInp.oninput = adjustHeight;
+
+    saveBtn.onclick = async () => {
+      const newTitle = titleInp.value.trim();
+      const newText = textInp.value.trim();
+      if (!newText) {
+        toast('⚠️ Prompt boş olamaz.', 'warning');
+        return;
+      }
+      try {
+        const updated = await api('/api/prompts', {
+          method: 'POST',
+          body: { id: p.id, title: newTitle, text: newText }
+        });
+        p.title = updated.title;
+        p.text = updated.text;
+        toast('✅ Prompt güncellendi', 'success');
+        renderPromptLibrary();
+      } catch (e) {
+        toast('Hata: ' + e.message, 'error');
+      }
+    };
+
+    useBtn.onclick = (e) => {
+      e.stopPropagation();
+      if (_promptPortalTarget === useBtn) {
+        closePromptUsePortal();
+        return;
+      }
+      openPromptPortal(useBtn, p.text);
+    };
+
+    delBtn.onclick = async () => {
+      const ok = await confirmModal('Promptu sil?','Kayıtlı prompt silinecek.');
+      if(!ok) return;
+      try {
+        await fetch('/api/prompts/'+p.id,{method:'DELETE'});
+        state.savedPrompts=state.savedPrompts.filter(x=>x.id!==p.id);
+        renderPromptLibrary();
+        toast('✅ Prompt silindi','success');
+      } catch(e) {
+        toast('Hata: '+e.message,'error');
+      }
+    };
+
+    list.appendChild(card);
+  });
+}
+
+$('#plib-save-btn').addEventListener('click',async ()=>{
+  const inp=$('#plib-input'); const text=inp.value.trim();
+  const titleInp=$('#plib-title-input'); const title=(titleInp?.value||'').trim();
+  if(!text){toast('⚠️ Prompt girin.','warning');return;}
+  try{
+    const saved=await api('/api/prompts',{method:'POST',body:{text,title}});
+    state.savedPrompts.unshift(saved); renderPromptLibrary();
+    inp.value=''; if(titleInp) titleInp.value=''; toast('✅ Prompt kaydedildi!','success');
+  }catch(e){toast('Hata: '+e.message,'error');}
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  GENERATE (uses job system)
+// ═══════════════════════════════════════════════════════════════════════════
+async function generate(){
+  if(state.generating) return;
+  if(!state.form.prompt || !state.form.prompt.trim()){ toast('Prompt boş olamaz.','warning'); return; }
+  const modeCfg=state.models[state.model].modes[state.mode];
+  const imageUrls = [];
+  if(state.model === 'veo-3-1'){
+    if(state.mode === 'start_end_frame'){
+      ['veo_start','veo_end'].forEach(k => {
+        if(state.fileSlots[k]?.url) imageUrls.push(state.fileSlots[k].url);
+      });
+    }else if(state.mode === 'reference'){
+      ['veo_ref1','veo_ref2','veo_ref3'].forEach(k => {
+        if(state.fileSlots[k]?.url) imageUrls.push(state.fileSlots[k].url);
+      });
+    }
+  }else if(state.fileSlots.legacy_image?.url){
+    imageUrls.push(state.fileSlots.legacy_image.url);
+  }
+  if(modeCfg.needs_image && !imageUrls.length){ toast('Bu mod için referans görsel zorunlu.','warning'); return; }
+
+  const payload={
+    task_type:'video', model:state.model, mode:state.mode,
+    prompt:state.form.prompt, negative_prompt:state.form.negative_prompt||'',
+    seed:state.form.seed||'',
+    resolution:state.form.resolution,
+    duration:Number(state.form.duration),
+    aspect_ratio:state.form.aspect_ratio,
+    enable_prompt_expansion:!!state.form.enable_prompt_expansion,
+    watermark:!!state.form.watermark,
+  };
+  if(imageUrls.length) payload.image_urls=imageUrls;
+  if(state.fileSlots.legacy_audio?.url) payload.audio_url=state.fileSlots.legacy_audio.url;
+
+  state.generating=true;
+  $('#btn-generate').disabled=true;
+  $('#btn-generate').textContent='⏳ Başlatılıyor…';
+
+  try{
+    const j=await api('/api/start-job',{method:'POST',body:payload});
+    createJobCard(j.job_id,state.form.prompt,state.model,'video');
+    loadAccountInfo();
+    pollJob(j.job_id);
+    $$('#results-tabs .results-tab').forEach(t=>t.classList.remove('active'));
+    $$('.tab-panel').forEach(p=>p.classList.remove('active'));
+    $$('#results-tabs .results-tab')[0].classList.add('active');
+    $('#tab-jobs').classList.add('active');
+    toast('✅ Üretim sıraya alındı!','success');
+  }catch(e){ toast('Hata: '+e.message,'error'); }
+  finally{
+    state.generating=false;
+    $('#btn-generate').disabled=false;
+    $('#btn-generate').textContent='✨ Üretimi Başlat';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  CLEAR BUTTONS
+// ═══════════════════════════════════════════════════════════════════════════
+$('#btn-clear-jobs').addEventListener('click',async ()=>{
+  if(!$('#jobs-grid').children.length) return;
+  const ok=await confirmModal('Üretimleri temizle?','Tüm üretim kartları silinecek.');
+  if(ok){$('#jobs-grid').innerHTML='';state.activeJobs={};updateJobsCount();}
+});
+$('#btn-clear-gallery').addEventListener('click',async ()=>{
+  if(!$('#gallery-grid').children.length) return;
+  const ok=await confirmModal('Galeriyi temizle?','Tüm galeri öğeleri silinecek.');
+  if(ok){await fetch('/api/gallery/clear',{method:'DELETE'});$('#gallery-grid').innerHTML='';updateGalleryCount();}
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  EVENTS
+// ═══════════════════════════════════════════════════════════════════════════
+$('#btn-generate').addEventListener('click', generate);
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  RESTORE + INIT
+// ═══════════════════════════════════════════════════════════════════════════
+async function restoreJobs(){
+  try{
+    const jobs=await api('/api/jobs');
+    Object.entries(jobs).forEach(([jobId,job])=>{
+      if(job.status!=='done' && job.status!=='error'){
+        createJobCard(jobId,job.prompt||'',job.model||'','video');
+        pollJob(jobId);
+      }
+    });
+  }catch(e){}
+  updateJobsCount();
+}
+
+(async () => {
+  state.models = await api('/api/models');
+  
+  if (state.models && state.models['veo-3-1']) {
+    const veo = state.models['veo-3-1'];
+    if (veo.modes) {
+      for (const mkey in veo.modes) {
+        const mode = veo.modes[mkey];
+        if (mode.supported_resolutions) {
+          mode.supported_resolutions = mode.supported_resolutions.filter(r => r !== '4k');
+        }
+        if (mode.cost_table && mode.cost_table['4k']) {
+          delete mode.cost_table['4k'];
+        }
+      }
+    }
+  }
+
+  if (state.models && state.models['wan-2-5-video']) {
+    const wan = state.models['wan-2-5-video'];
+    if (wan.modes) {
+      for (const mkey in wan.modes) {
+        const mode = wan.modes[mkey];
+        if (mode.supported_resolutions) {
+          mode.supported_resolutions = mode.supported_resolutions.filter(r => r !== '1080p');
+        }
+        if (mode.cost_table && mode.cost_table['1080p']) {
+          delete mode.cost_table['1080p'];
+        }
+      }
+    }
+  }
+
+  // Set default model and mode for video
+  const videoModels = Object.keys(state.models).filter(k => state.models[k].type === 'video');
+  state.model = videoModels[0];
+  state.mode = Object.keys(state.models[state.model].modes)[0];
+  state.task = 'video';
+  buildForm();
+  await loadAccountInfo();
+  loadGallery();
+  loadPrompts();
+  restoreJobs();
+})();
+</script>
+</body>
+</html>
