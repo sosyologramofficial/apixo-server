@@ -21,7 +21,7 @@ from flask import (
 #  VERİTABANI VE LOG SİSTEMİ
 # ════════════════════════════════════════════════════════════════════════════
 
-DB_CONN_STR = "postgresql://neondb_owner:npg_3f8XnqBFVkNm@ep-bitter-grass-atnewp3m-pooler.c-9.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
+DB_CONN_STR = "postgresql://neondb_owner:npg_JtUVxc7vWjw0@ep-rapid-voice-ahentndm-pooler.c-3.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
 
 def get_db_conn():
     return psycopg2.connect(DB_CONN_STR)
@@ -1326,8 +1326,9 @@ def api_proxy_media():
         return jsonify({"error": str(e)}), 500
 
 
+init_db()
+
 if __name__ == "__main__":
     os.makedirs("templates", exist_ok=True)
-    init_db()
     write_log("Sunucu başlatılıyor...")
     app.run(host="0.0.0.0", port=5000, debug=True)
